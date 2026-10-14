@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Instructor Studio - EduLearn{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Header -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4 text-center sm:text-left">
+                <img src="{{ user.get_avatar }}" alt="{{ user.username }}" class="w-16 h-16 rounded-2xl object-cover ring-4 ring-purple-50 shadow-md">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl font-black text-slate-900 font-heading">
+                            Instructor Studio
+                        </h1>
+                        <span class="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-bold text-xs">Instructor</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Manage your curriculum, review student progress, and publish engaging courses.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="{% url 'instructor_course_create' %}" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle"></i> Create New Course
+                </a>
+            </div>
+        </div>
+
+        <!-- Instructor Metrics -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-slate-900 font-heading">{{ courses.count }}</div>
+                    <div class="text-xs text-slate-500 font-medium">Courses Created</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-slate-900 font-heading">{{ total_students }}</div>
+                    <div class="text-xs text-slate-500 font-medium">Enrolled Students</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-play"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-slate-900 font-heading">{{ total_lessons }}</div>
+                    <div class="text-xs text-slate-500 font-medium">Total Lessons Published</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Managed Courses List -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-900 font-heading flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-indigo-600"></i> My Authored Courses
+                </h2>
+                <a href="{% url 'instructor_course_create' %}" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">
+                    + Add New Course
+                </a>
+            </div>
+
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4">Course</th>
+                                <th class="px-6 py-4">Category</th>
+                                <th class="px-6 py-4">Students</th>
+                                <th class="px-6 py-4">Lessons</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            {% for c in courses %}
+                                <tr class="hover:bg-slate-50/60 transition">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <img src="{{ c.get_thumbnail }}" alt="{{ c.title }}" class="w-12 h-10 rounded-lg object-cover">
+                                            <div>
+                                                <div class="font-bold text-slate-900 hover:text-indigo-600">
+                                                    <a href="{% url 'course_detail' c.slug %}">{{ c.title }}</a>
+                                                </div>
+                                                <div class="text-[10px] text-slate-400">{{ c.level }} &bull; {% if c.price == 0 %}Free{% else %}${{ c.price }}{% endif %}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">{{ c.category.name|default:"Uncategorized" }}</td>
+                                    <td class="px-6 py-4 font-semibold text-slate-900">{{ c.total_enrolled_students }}</td>
+                                    <td class="px-6 py-4">{{ c.total_lessons }}</td>
+                                    <td class="px-6 py-4">
+                                        {% if c.is_published %}
+                                            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">Published</span>
+                                        {% else %}
+                                            <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold text-[10px]">Draft</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 text-right space-x-2">
+                                        <a href="{% url 'instructor_course_edit' c.slug %}" class="px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white font-bold transition">
+                                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit & Curriculum
+                                        </a>
+                                        <a href="{% url 'course_detail' c.slug %}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition" title="Preview Public Page">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="px-6 py-10 text-center text-slate-400">
+                                        You haven't created any courses yet. Click "Create New Course" above to publish your first course!
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Enrollments -->
+        <div class="space-y-4 pt-4">
+            <h2 class="text-lg font-bold text-slate-900 font-heading flex items-center gap-2">
+                <i class="fa-solid fa-user-check text-emerald-600"></i> Recent Student Enrollments
+            </h2>
+
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4">Student</th>
+                                <th class="px-6 py-4">Course</th>
+                                <th class="px-6 py-4">Enrolled Date</th>
+                                <th class="px-6 py-4">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            {% for enr in recent_enrollments %}
+                                <tr class="hover:bg-slate-50/60 transition">
+                                    <td class="px-6 py-4 font-bold text-slate-900 flex items-center gap-2">
+                                        <img src="{{ enr.student.get_avatar }}" alt="{{ enr.student.username }}" class="w-6 h-6 rounded-full object-cover">
+                                        {{ enr.student.get_full_name|default:enr.student.username }}
+                                    </td>
+                                    <td class="px-6 py-4">{{ enr.course.title }}</td>
+                                    <td class="px-6 py-4 text-slate-400">{{ enr.enrolled_at|date:"M d, Y" }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="font-bold text-indigo-600">{{ enr.progress_percentage }}%</span>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="px-6 py-8 text-center text-slate-400">
+                                        No student enrollments yet.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

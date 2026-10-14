@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Create New Course - Instructor Studio{% endblock %}
+
+{% block content %}
+<div class="py-12 bg-slate-50 min-h-[85vh]">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <a href="{% url 'dashboard' %}" class="text-xs text-indigo-600 font-semibold hover:underline">&larr; Back to Dashboard</a>
+                <h1 class="text-2xl font-black text-slate-900 font-heading mt-2">Create New Course</h1>
+                <p class="text-xs text-slate-500">Provide the foundational details for your course. You can add modules and lessons next.</p>
+            </div>
+
+            <form method="POST" class="space-y-5">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Course Title *</label>
+                    {{ form.title }}
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Subtitle / One-line Summary</label>
+                    {{ form.subtitle }}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Category *</label>
+                        {{ form.category }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Level *</label>
+                        {{ form.level }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Price ($) (0 for Free)</label>
+                        {{ form.price }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cover Image / Banner URL</label>
+                    {{ form.thumbnail_url }}
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Detailed Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="flex items-center gap-6 pt-2">
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        {{ form.is_published }}
+                        <span>Publish immediately (visible to students)</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        {{ form.featured }}
+                        <span>Featured on homepage</span>
+                    </label>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                    <a href="{% url 'dashboard' %}" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition">Cancel</a>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-300 hover:opacity-95 transition">
+                        Save & Continue to Curriculum &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

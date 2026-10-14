@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ quiz.title }} - EduLearn Quiz{% endblock %}
+
+{% block content %}
+<div class="py-12 bg-slate-50 min-h-[85vh]">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        
+        <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+            <div>
+                <a href="{% url 'course_learn' quiz.course.slug %}" class="text-xs text-indigo-600 font-semibold hover:underline">
+                    &larr; Back to {{ quiz.course.title }}
+                </a>
+                <div class="flex items-center gap-3 mt-3">
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-clipboard-question"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-900 font-heading">{{ quiz.title }}</h1>
+                        <p class="text-xs text-slate-500">Course: {{ quiz.course.title }}</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if quiz.description %}
+                <div class="p-4 rounded-2xl bg-slate-50 text-xs text-slate-600 leading-relaxed border border-slate-100">
+                    {{ quiz.description }}
+                </div>
+            {% endif %}
+
+            <!-- Quiz Rules Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-center">
+                    <div class="text-xl font-black text-indigo-700 font-heading">{{ quiz.questions.count }}</div>
+                    <div class="text-[11px] text-slate-600 font-medium">Questions</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 text-center">
+                    <div class="text-xl font-black text-emerald-700 font-heading">{{ quiz.passing_score }}%</div>
+                    <div class="text-[11px] text-slate-600 font-medium">Passing Threshold</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 text-center">
+                    <div class="text-xl font-black text-purple-700 font-heading">{{ quiz.time_limit_minutes }} mins</div>
+                    <div class="text-[11px] text-slate-600 font-medium">Estimated Time</div>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <a href="{% url 'quiz_take' quiz.id %}" class="w-full py-4 rounded-2xl gradient-brand text-white text-sm font-bold shadow-lg shadow-indigo-300 hover:opacity-95 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play text-xs"></i> Start Quiz Now
+                </a>
+            </div>
+
+            <!-- Previous Attempts -->
+            {% if previous_attempts %}
+                <div class="pt-6 border-t border-slate-100 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Your Previous Attempts</h3>
+                    <div class="divide-y divide-slate-100 border border-slate-100 rounded-2xl overflow-hidden">
+                        {% for att in previous_attempts %}
+                            <div class="p-3.5 flex items-center justify-between text-xs bg-slate-50/50">
+                                <div class="flex items-center gap-3">
+                                    {% if att.passed %}
+                                        <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Passed</span>
+                                    {% else %}
+                                        <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">Failed</span>
+                                    {% endif %}
+                                    <span class="font-bold text-slate-900">{{ att.score }}%</span>
+                                    <span class="text-slate-400">({{ att.correct_answers }}/{{ att.total_questions }} correct)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-slate-400 text-[11px]">{{ att.completed_at|date:"M d, Y" }}</span>
+                                    <a href="{% url 'quiz_result' att.id %}" class="font-semibold text-indigo-600 hover:text-indigo-800">
+                                        Review &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Course: {{ course.title }} - Instructor Studio{% endblock %}
+
+{% block content %}
+<div class="py-12 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <a href="{% url 'dashboard' %}" class="text-xs text-indigo-600 font-semibold hover:underline">&larr; Back to Instructor Dashboard</a>
+                <h1 class="text-2xl font-black text-slate-900 font-heading mt-1">Course Studio: {{ course.title }}</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{% url 'course_detail' course.slug %}" target="_blank" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-eye"></i> View Public Page
+                </a>
+                <a href="{% url 'course_learn' course.slug %}" target="_blank" class="px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i> Student View
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left: Course Metadata Form (5 cols) -->
+            <div class="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-5">
+                <h2 class="text-base font-bold text-slate-900 font-heading border-b border-slate-100 pb-3">Course Information</h2>
+                <form method="POST" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Subtitle</label>
+                        {{ form.subtitle }}
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Level</label>
+                            {{ form.level }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Price ($)</label>
+                        {{ form.price }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Banner Image URL</label>
+                        {{ form.thumbnail_url }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                            {{ form.is_published }}
+                            <span>Published</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                            {{ form.featured }}
+                            <span>Featured</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-300">
+                        Update Course Info
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right: Curriculum Builder (7 cols) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Add Module Box -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                    <h2 class="text-base font-bold text-slate-900 font-heading">Add New Module / Chapter</h2>
+                    <form method="POST" action="{% url 'instructor_module_create' course.slug %}" class="space-y-3">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <div class="sm:col-span-3">
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Module Title *</label>
+                                {{ module_form.title }}
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Order</label>
+                                {{ module_form.order }}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Description (Optional)</label>
+                            {{ module_form.description }}
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+                                + Add Module
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Modules & Lessons List -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Course Modules & Lessons</h3>
+
+                    {% for module in modules %}
+                        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                            <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-[11px] font-bold flex items-center justify-center">
+                                        {{ module.order }}
+                                    </span>
+                                    <h4 class="text-sm font-bold text-slate-900">{{ module.title }}</h4>
+                                </div>
+                                <a href="{% url 'instructor_lesson_create' module.id %}" class="px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white text-xs font-bold transition">
+                                    + Add Lesson
+                                </a>
+                            </div>
+
+                            <div class="divide-y divide-slate-100">
+                                {% for lesson in module.lessons.all %}
+                                    <div class="p-3.5 flex items-center justify-between text-xs hover:bg-slate-50/70 transition">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-slate-400 font-mono">{{ lesson.order }}.</span>
+                                            {% if lesson.lesson_type == 'video' %}
+                                                <i class="fa-solid fa-video text-indigo-500"></i>
+                                            {% else %}
+                                                <i class="fa-solid fa-file-lines text-emerald-500"></i>
+                                            {% endif %}
+                                            <span class="font-medium text-slate-800">{{ lesson.title }}</span>
+                                            {% if lesson.is_preview %}
+                                                <span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-700 text-[10px] font-bold">Preview</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex items-center gap-3 text-slate-400">
+                                            <span>{{ lesson.duration_minutes }}m</span>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="p-4 text-xs text-slate-400 text-center">
+                                        No lessons yet in this module. Click "+ Add Lesson" to add content.
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="p-8 bg-white rounded-3xl border border-slate-200 text-center text-xs text-slate-400">
+                            No modules created yet. Use the form above to add your first module!
+                        </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

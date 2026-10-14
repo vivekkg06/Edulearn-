@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Courses - EduLearn{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 font-heading">Explore All Courses</h1>
+                <p class="text-xs text-slate-500 mt-1">Discover industry-ready courses designed and taught by experienced developers</p>
+            </div>
+
+            <!-- Sort By Selector -->
+            <form method="GET" class="flex items-center gap-2">
+                {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+                {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                {% if selected_level %}<input type="hidden" name="level" value="{{ selected_level }}">{% endif %}
+                {% if selected_price %}<input type="hidden" name="price" value="{{ selected_price }}">{% endif %}
+
+                <label class="text-xs font-bold text-slate-500 whitespace-nowrap">Sort By:</label>
+                <select name="sort" onchange="this.form.submit()" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="popular" {% if selected_sort == 'popular' %}selected{% endif %}>Most Popular</option>
+                    <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Highest Rated</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <span class="text-sm font-bold text-slate-900 font-heading flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-indigo-600"></i> Filters
+                        </span>
+                        {% if search_query or selected_category or selected_level or selected_price %}
+                            <a href="{% url 'course_list' %}" class="text-[11px] font-bold text-rose-500 hover:text-rose-600">Reset</a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Categories</h4>
+                        <div class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+                            <a href="{% url 'course_list' %}?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_level %}level={{ selected_level }}&{% endif %}{% if selected_price %}price={{ selected_price }}&{% endif %}"
+                               class="flex items-center justify-between px-3 py-2 rounded-xl text-xs {% if not selected_category %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                <span>All Categories</span>
+                            </a>
+                            {% for cat in categories %}
+                                <a href="{% url 'course_list' %}?category={{ cat.slug }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_level %}&level={{ selected_level }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}"
+                                   class="flex items-center justify-between px-3 py-2 rounded-xl text-xs {% if selected_category == cat.slug %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                    <span>{{ cat.name }}</span>
+                                    <span class="text-[10px] text-slate-400 font-medium">({{ cat.count }})</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Level Filter -->
+                    <div class="space-y-3 border-t border-slate-100 pt-5">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Skill Level</h4>
+                        <div class="space-y-1.5">
+                            <a href="{% url 'course_list' %}?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_price %}price={{ selected_price }}&{% endif %}"
+                               class="block px-3 py-2 rounded-xl text-xs {% if not selected_level %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                All Levels
+                            </a>
+                            {% for lvl in "Beginner,Intermediate,Advanced"|make_list|join:""|make_list %}
+                            {% endfor %}
+                            <a href="{% url 'course_list' %}?level=Beginner{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}"
+                               class="block px-3 py-2 rounded-xl text-xs {% if selected_level == 'Beginner' %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                Beginner
+                            </a>
+                            <a href="{% url 'course_list' %}?level=Intermediate{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}"
+                               class="block px-3 py-2 rounded-xl text-xs {% if selected_level == 'Intermediate' %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                Intermediate
+                            </a>
+                            <a href="{% url 'course_list' %}?level=Advanced{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_price %}&price={{ selected_price }}{% endif %}"
+                               class="block px-3 py-2 rounded-xl text-xs {% if selected_level == 'Advanced' %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                Advanced
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Price Filter -->
+                    <div class="space-y-3 border-t border-slate-100 pt-5">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Price</h4>
+                        <div class="space-y-1.5">
+                            <a href="{% url 'course_list' %}?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if selected_level %}level={{ selected_level }}&{% endif %}"
+                               class="block px-3 py-2 rounded-xl text-xs {% if not selected_price %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                All Prices
+                            </a>
+                            <a href="{% url 'course_list' %}?price=free{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_level %}level={{ selected_level }}&{% endif %}"
+                               class="block px-3 py-2 rounded-xl text-xs {% if selected_price == 'free' %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                Free
+                            </a>
+                            <a href="{% url 'course_list' %}?price=paid{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_level %}level={{ selected_level }}&{% endif %}"
+                               class="block px-3 py-2 rounded-xl text-xs {% if selected_price == 'paid' %}bg-indigo-50 text-indigo-700 font-bold{% else %}text-slate-600 hover:bg-slate-50{% endif %}">
+                                Paid
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Course Results Grid -->
+            <div class="lg:col-span-3 space-y-6">
+                
+                <div class="flex items-center justify-between text-xs text-slate-500 font-medium">
+                    <span>Showing <strong class="text-slate-900">{{ courses|length }}</strong> courses</span>
+                    {% if search_query %}
+                        <span>Results for "<span class="text-indigo-600 font-semibold">{{ search_query }}</span>"</span>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for course in courses %}
+                        <div class="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group">
+                            
+                            <!-- Thumbnail -->
+                            <div class="relative h-44 overflow-hidden bg-slate-100">
+                                <img src="{{ course.get_thumbnail }}" alt="{{ course.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute top-3 left-3 flex gap-1.5">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/90 backdrop-blur text-slate-800 shadow-sm">
+                                        {{ course.level }}
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-3 right-3">
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold {% if course.price == 0 %}bg-emerald-500 text-white{% else %}bg-slate-900 text-white{% endif %} shadow-sm">
+                                        {% if course.price == 0 %}Free{% else %}${{ course.price }}{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Card Info -->
+                            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                                <div>
+                                    <div class="flex items-center gap-2 text-[11px] text-amber-500 font-semibold mb-1.5">
+                                        <i class="fa-solid fa-star"></i>
+                                        <span>{{ course.average_rating }}</span>
+                                        <span class="text-slate-400">({{ course.review_count }})</span>
+                                        {% if course.category %}
+                                            <span class="text-slate-300">&bull;</span>
+                                            <span class="text-indigo-600">{{ course.category.name }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-2">
+                                        <a href="{% url 'course_detail' course.slug %}">{{ course.title }}</a>
+                                    </h3>
+
+                                    <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">
+                                        {{ course.subtitle|default:course.description }}
+                                    </p>
+                                </div>
+
+                                <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="{{ course.instructor.get_avatar }}" alt="{{ course.instructor.username }}" class="w-5 h-5 rounded-full object-cover">
+                                        <span class="truncate max-w-[100px] text-[11px]">{{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+                                    </div>
+                                    <span class="text-[11px]"><i class="fa-solid fa-book-open text-slate-400 mr-1"></i> {{ course.total_lessons }} lessons</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    {% empty %}
+                        <div class="col-span-3 bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
+                            <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-xl">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-800">No courses match your criteria</h3>
+                            <p class="text-xs text-slate-500 max-w-sm mx-auto">Try clearing your filters or search keywords to discover other courses.</p>
+                            <a href="{% url 'course_list' %}" class="inline-block px-5 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-xs font-bold">
+                                Clear All Filters
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

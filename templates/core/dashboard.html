@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}My Learning Dashboard - EduLearn{% endblock %}
+
+{% block content %}
+<div class="py-10 bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Dashboard Header -->
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4 text-center sm:text-left">
+                <img src="{{ user.get_avatar }}" alt="{{ user.username }}" class="w-16 h-16 rounded-2xl object-cover ring-4 ring-indigo-50 shadow-md">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 font-heading">
+                        Welcome back, {{ user.first_name|default:user.username }}! 👋
+                    </h1>
+                    <p class="text-xs text-slate-500 mt-1">
+                        {{ user.headline|default:"Lifelong Learner at EduLearn" }} &bull; Role: <span class="capitalize font-bold text-indigo-600">{{ user.role }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="{% url 'course_list' %}" class="px-5 py-2.5 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-200 hover:opacity-95 transition flex items-center gap-2">
+                    <i class="fa-solid fa-compass"></i> Explore More Courses
+                </a>
+                <a href="{% url 'profile' %}" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition" title="Profile Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Metric Counters -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-slate-900 font-heading">{{ enrollments.count }}</div>
+                    <div class="text-xs text-slate-500 font-medium">Courses Enrolled</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-slate-900 font-heading">{{ completed_courses|length }}</div>
+                    <div class="text-xs text-slate-500 font-medium">Completed Courses</div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-slate-900 font-heading">{{ recent_attempts.count }}</div>
+                    <div class="text-xs text-slate-500 font-medium">Quizzes Attempted</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active / In-Progress Courses -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-bold text-slate-900 font-heading flex items-center gap-2">
+                    <i class="fa-solid fa-play text-indigo-600 text-sm"></i> In Progress Learning
+                </h2>
+                <span class="text-xs text-slate-500">{{ in_progress_courses|length }} Active</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for enrollment in in_progress_courses %}
+                    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                        <div>
+                            <div class="relative h-44 overflow-hidden bg-slate-100">
+                                <img src="{{ enrollment.course.get_thumbnail }}" alt="{{ enrollment.course.title }}" class="w-full h-full object-cover">
+                                <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/90 backdrop-blur text-slate-800">
+                                    {{ enrollment.course.level }}
+                                </span>
+                            </div>
+
+                            <div class="p-5 space-y-3">
+                                <h3 class="text-sm font-bold text-slate-900 line-clamp-1 hover:text-indigo-600 transition">
+                                    <a href="{% url 'course_learn' enrollment.course.slug %}">{{ enrollment.course.title }}</a>
+                                </h3>
+                                
+                                <p class="text-xs text-slate-500">Instructor: {{ enrollment.course.instructor.get_full_name|default:enrollment.course.instructor.username }}</p>
+
+                                <!-- Progress Bar -->
+                                <div>
+                                    <div class="flex justify-between text-[11px] font-semibold text-slate-600 mb-1">
+                                        <span>Progress</span>
+                                        <span class="text-indigo-600">{{ enrollment.progress_percentage }}%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                        <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: {{ enrollment.progress_percentage }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-5 pt-0">
+                            <a href="{% url 'course_learn' enrollment.course.slug %}" class="w-full py-2.5 px-4 rounded-xl bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white text-xs font-bold transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-play text-[10px]"></i> Continue Course
+                            </a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-span-3 bg-white p-10 rounded-3xl border border-slate-200 text-center space-y-3">
+                        <div class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mx-auto text-xl">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800">No active courses yet</h3>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">Explore our catalog of web development, AI, and Python courses to enroll and start learning.</p>
+                        <a href="{% url 'course_list' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-200">
+                            Browse Courses
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Completed Courses Section -->
+        {% if completed_courses %}
+        <div class="space-y-4 pt-4">
+            <h2 class="text-lg font-bold text-slate-900 font-heading flex items-center gap-2">
+                <i class="fa-solid fa-medal text-emerald-500 text-sm"></i> Completed Courses
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for enrollment in completed_courses %}
+                    <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fa-solid fa-certificate"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-900 line-clamp-1">{{ enrollment.course.title }}</h3>
+                                <p class="text-[11px] text-emerald-600 font-medium">100% Completed</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'course_learn' enrollment.course.slug %}" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold whitespace-nowrap">
+                            Review
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quiz Attempts History -->
+        <div class="space-y-4 pt-4">
+            <h2 class="text-lg font-bold text-slate-900 font-heading flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-purple-600 text-sm"></i> Recent Quiz Attempts
+            </h2>
+
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-100">
+                            <tr>
+                                <th class="px-6 py-4">Quiz Title</th>
+                                <th class="px-6 py-4">Course</th>
+                                <th class="px-6 py-4">Score</th>
+                                <th class="px-6 py-4">Status</th>
+                                <th class="px-6 py-4">Date</th>
+                                <th class="px-6 py-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-700">
+                            {% for attempt in recent_attempts %}
+                                <tr class="hover:bg-slate-50/60 transition">
+                                    <td class="px-6 py-4 font-bold text-slate-900">{{ attempt.quiz.title }}</td>
+                                    <td class="px-6 py-4">{{ attempt.quiz.course.title }}</td>
+                                    <td class="px-6 py-4 font-semibold text-slate-900">{{ attempt.score }}% ({{ attempt.correct_answers }}/{{ attempt.total_questions }})</td>
+                                    <td class="px-6 py-4">
+                                        {% if attempt.passed %}
+                                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-bold text-[10px]">PASSED</span>
+                                        {% else %}
+                                            <span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-bold text-[10px]">FAILED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-400">{{ attempt.completed_at|date:"M d, Y" }}</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="{% url 'quiz_result' attempt.id %}" class="font-semibold text-indigo-600 hover:text-indigo-800">
+                                            View Report &rarr;
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-slate-400">
+                                        No quizzes attempted yet. Take quizzes inside your enrolled courses!
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

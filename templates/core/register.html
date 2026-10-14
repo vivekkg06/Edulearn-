@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account - EduLearn{% endblock %}
+
+{% block content %}
+<div class="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200/80">
+        
+        <div class="text-center space-y-2">
+            <div class="w-12 h-12 rounded-2xl gradient-brand text-white flex items-center justify-center mx-auto shadow-md shadow-indigo-200 text-xl">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading">Join EduLearn</h2>
+            <p class="text-xs text-slate-500">Start learning or start teaching with hundreds of tech courses</p>
+        </div>
+
+        <form method="POST" action="{% url 'register' %}" class="space-y-4">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">First Name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <p class="text-xs text-rose-500 mt-1">{{ form.first_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Last Name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <p class="text-xs text-rose-500 mt-1">{{ form.last_name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Username *</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <p class="text-xs text-rose-500 mt-1">{{ form.username.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Email Address *</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <p class="text-xs text-rose-500 mt-1">{{ form.email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">I want to join as *</label>
+                    {{ form.role }}
+                    {% if form.role.errors %}
+                        <p class="text-xs text-rose-500 mt-1">{{ form.role.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Headline / Field</label>
+                    {{ form.headline }}
+                    {% if form.headline.errors %}
+                        <p class="text-xs text-rose-500 mt-1">{{ form.headline.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Password *</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <p class="text-xs text-rose-500 mt-1">{{ form.password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Confirm Password *</label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}
+                        <p class="text-xs text-rose-500 mt-1">{{ form.confirm_password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-600 font-medium">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <div class="pt-2">
+                <button type="submit" class="w-full py-3.5 px-4 rounded-xl gradient-brand text-white text-sm font-bold shadow-md shadow-indigo-300 hover:opacity-95 transition">
+                    Create My Free Account
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center pt-4 border-t border-slate-100">
+            <p class="text-xs text-slate-500">
+                Already registered? 
+                <a href="{% url 'login' %}" class="font-bold text-indigo-600 hover:text-indigo-700">Sign in here</a>
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

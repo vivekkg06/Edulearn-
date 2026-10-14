@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Lesson to {{ module.title }} - Instructor Studio{% endblock %}
+
+{% block content %}
+<div class="py-12 bg-slate-50 min-h-[85vh]">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white p-8 sm:p-10 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <a href="{% url 'instructor_course_edit' module.course.slug %}" class="text-xs text-indigo-600 font-semibold hover:underline">&larr; Back to {{ module.course.title }}</a>
+                <h1 class="text-2xl font-black text-slate-900 font-heading mt-2">Add Lesson</h1>
+                <p class="text-xs text-slate-500">Adding to Module: <strong class="text-slate-800">{{ module.title }}</strong></p>
+            </div>
+
+            <form method="POST" class="space-y-5">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Lesson Title *</label>
+                    {{ form.title }}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Lesson Type</label>
+                        {{ form.lesson_type }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Duration (Mins)</label>
+                        {{ form.duration_minutes }}
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Order Sequence</label>
+                        {{ form.order }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Video URL (YouTube / Vimeo / MP4)</label>
+                    {{ form.video_url }}
+                    <p class="text-[11px] text-slate-400 mt-1">e.g. https://www.youtube.com/watch?v=kqtD5dpn9C8 (will be auto-embedded)</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Lesson Notes / Reading Content (Markdown or HTML)</label>
+                    {{ form.content }}
+                </div>
+
+                <div>
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        {{ form.is_preview }}
+                        <span>Allow Free Preview (Students can view before enrolling)</span>
+                    </label>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                    <a href="{% url 'instructor_course_edit' module.course.slug %}" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition">Cancel</a>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-300 hover:opacity-95 transition">
+                        Save Lesson &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

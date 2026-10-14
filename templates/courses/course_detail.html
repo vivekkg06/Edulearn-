@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} - EduLearn{% endblock %}
+
+{% block content %}
+<!-- Course Header Banner -->
+<div class="bg-slate-900 text-white py-12 lg:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <div class="lg:col-span-8 space-y-4">
+                <div class="flex flex-wrap items-center gap-2 text-xs text-indigo-400">
+                    <a href="{% url 'course_list' %}" class="hover:underline">Courses</a>
+                    <span>/</span>
+                    {% if course.category %}
+                        <a href="{% url 'course_list' %}?category={{ course.category.slug }}" class="hover:underline">{{ course.category.name }}</a>
+                        <span>/</span>
+                    {% endif %}
+                    <span class="text-slate-400">{{ course.level }}</span>
+                </div>
+
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black font-heading tracking-tight leading-tight">
+                    {{ course.title }}
+                </h1>
+
+                <p class="text-sm sm:text-base text-slate-300 max-w-3xl leading-relaxed">
+                    {{ course.subtitle|default:course.description|truncatewords:40 }}
+                </p>
+
+                <!-- Metadata Row -->
+                <div class="flex flex-wrap items-center gap-6 pt-2 text-xs text-slate-300">
+                    <div class="flex items-center gap-1.5 text-amber-400 font-bold">
+                        <i class="fa-solid fa-star"></i>
+                        <span>{{ course.average_rating }}</span>
+                        <span class="text-slate-400 font-normal">({{ course.review_count }} ratings)</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-users text-slate-400"></i>
+                        <span>{{ course.total_enrolled_students }} students enrolled</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <i class="fa-regular fa-clock text-slate-400"></i>
+                        <span>{{ course.total_duration_minutes }} minutes</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <img src="{{ course.instructor.get_avatar }}" alt="{{ course.instructor.username }}" class="w-6 h-6 rounded-full object-cover">
+                        <span>Created by <strong class="text-white">{{ course.instructor.get_full_name|default:course.instructor.username }}</strong></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Main Body & Sticky Sidebar -->
+<div class="py-12 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Column: Syllabus, Overview, Instructor, Reviews -->
+            <div class="lg:col-span-8 space-y-10">
+                
+                <!-- About Course -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                    <h2 class="text-xl font-bold text-slate-900 font-heading">Course Description</h2>
+                    <div class="text-sm text-slate-700 leading-relaxed space-y-3 prose max-w-none">
+                        {{ course.description|linebreaks }}
+                    </div>
+                </div>
+
+                <!-- Course Curriculum / Syllabus -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 font-heading">Course Curriculum</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ modules.count }} Modules &bull; {{ course.total_lessons }} Lessons</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for module in modules %}
+                            <div class="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+                                <div class="p-4 bg-slate-100/70 border-b border-slate-200 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-[11px] font-bold flex items-center justify-center">
+                                            {{ module.order }}
+                                        </span>
+                                        <h3 class="text-sm font-bold text-slate-900">{{ module.title }}</h3>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 font-medium">{{ module.lessons.count }} lessons</span>
+                                </div>
+
+                                <div class="divide-y divide-slate-100 bg-white">
+                                    {% for lesson in module.lessons.all %}
+                                        <div class="p-3.5 flex items-center justify-between hover:bg-slate-50 transition text-xs">
+                                            <div class="flex items-center gap-3">
+                                                {% if lesson.lesson_type == 'video' %}
+                                                    <i class="fa-solid fa-circle-play text-indigo-500"></i>
+                                                {% elif lesson.lesson_type == 'article' %}
+                                                    <i class="fa-solid fa-file-lines text-emerald-500"></i>
+                                                {% else %}
+                                                    <i class="fa-solid fa-code text-purple-500"></i>
+                                                {% endif %}
+                                                <span class="font-medium text-slate-800">{{ lesson.title }}</span>
+                                            </div>
+
+                                            <div class="flex items-center gap-3 text-slate-500">
+                                                <span>{{ lesson.duration_minutes }}m</span>
+                                                {% if is_enrolled %}
+                                                    <a href="{% url 'course_learn_lesson' course.slug lesson.id %}" class="font-bold text-indigo-600 hover:text-indigo-800">
+                                                        Start &rarr;
+                                                    </a>
+                                                {% elif lesson.is_preview %}
+                                                    <a href="{% url 'course_learn_lesson' course.slug lesson.id %}" class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold text-[10px]">
+                                                        Preview
+                                                    </a>
+                                                {% else %}
+                                                    <i class="fa-solid fa-lock text-slate-300"></i>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="p-4 text-xs text-slate-400">No lessons in this module yet.</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-6 text-xs text-slate-400">Curriculum is currently being uploaded.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Instructor Info Card -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+                    <h2 class="text-xl font-bold text-slate-900 font-heading">Your Instructor</h2>
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pt-2">
+                        <img src="{{ course.instructor.get_avatar }}" alt="{{ course.instructor.username }}" class="w-20 h-20 rounded-2xl object-cover ring-2 ring-indigo-50">
+                        <div class="space-y-2 text-center sm:text-left">
+                            <h3 class="text-base font-bold text-slate-900">{{ course.instructor.get_full_name|default:course.instructor.username }}</h3>
+                            <p class="text-xs text-indigo-600 font-semibold">{{ course.instructor.headline|default:"Course Instructor" }}</p>
+                            <p class="text-xs text-slate-600 leading-relaxed">{{ course.instructor.bio|default:"Passionate educator creating top-tier technical courses." }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Reviews -->
+                <div class="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 font-heading">Student Feedback</h2>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-2xl font-black text-slate-900">{{ course.average_rating }}</span>
+                                <div class="text-amber-400 text-sm">
+                                    <i class="fa-solid fa-star"></i>
+                                </div>
+                                <span class="text-xs text-slate-500 font-medium">Course Rating &bull; {{ reviews.count }} Reviews</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave Review Form (If enrolled) -->
+                    {% if is_enrolled %}
+                        <div class="p-5 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-3">
+                            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                                {% if user_review %}Edit your review{% else %}Share your feedback{% endif %}
+                            </h4>
+                            <form method="POST" action="{% url 'add_review' course.slug %}" class="space-y-3">
+                                {% csrf_token %}
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Your Rating:</label>
+                                    {{ review_form.rating }}
+                                </div>
+                                <div>
+                                    {{ review_form.comment }}
+                                </div>
+                                <button type="submit" class="px-5 py-2 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-200">
+                                    Submit Review
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                    <!-- Reviews List -->
+                    <div class="space-y-4">
+                        {% for review in reviews %}
+                            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <img src="{{ review.student.get_avatar }}" alt="{{ review.student.username }}" class="w-8 h-8 rounded-full object-cover">
+                                        <div>
+                                            <div class="text-xs font-bold text-slate-900">{{ review.student.get_full_name|default:review.student.username }}</div>
+                                            <div class="text-[10px] text-slate-400">{{ review.created_at|date:"M d, Y" }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-amber-400 text-xs">
+                                        {% for i in "12345"|make_list %}
+                                            <i class="fa-solid fa-star {% if forloop.counter <= review.rating %}text-amber-400{% else %}text-slate-200{% endif %}"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-relaxed">{{ review.comment }}</p>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-6 text-xs text-slate-400">No reviews yet. Be the first to leave one!</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Sticky Action Card -->
+            <div class="lg:col-span-4 sticky top-24">
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden space-y-6">
+                    
+                    <!-- Thumbnail preview -->
+                    <div class="relative h-52 overflow-hidden bg-slate-900 group">
+                        <img src="{{ course.get_thumbnail }}" alt="{{ course.title }}" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500">
+                    </div>
+
+                    <div class="p-6 pt-0 space-y-6">
+                        
+                        <!-- Price Block -->
+                        <div class="flex items-baseline justify-between">
+                            <div>
+                                <span class="text-3xl font-black text-slate-900 font-heading">
+                                    {% if course.price == 0 %}FREE{% else %}${{ course.price }}{% endif %}
+                                </span>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                Full Access
+                            </span>
+                        </div>
+
+                        <!-- CTA Action -->
+                        {% if is_enrolled %}
+                            <div class="space-y-2">
+                                <a href="{% url 'course_learn' course.slug %}" class="w-full py-4 rounded-2xl gradient-brand text-white text-sm font-bold shadow-lg shadow-indigo-300 hover:opacity-95 transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-play text-xs"></i> Go To Learning Room
+                                </a>
+                                {% if enrollment %}
+                                    <div class="text-center">
+                                        <p class="text-[11px] text-slate-500 font-semibold">Your Progress: {{ enrollment.progress_percentage }}%</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <form method="POST" action="{% url 'enroll_course' course.slug %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full py-4 rounded-2xl gradient-brand text-white text-sm font-bold shadow-lg shadow-indigo-300 hover:opacity-95 transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-bolt text-xs"></i> Enroll Now Free
+                                </button>
+                            </form>
+                        {% endif %}
+
+                        <!-- Features Included Checklist -->
+                        <div class="space-y-3 pt-4 border-t border-slate-100">
+                            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">This Course Includes:</h4>
+                            <ul class="space-y-2.5 text-xs text-slate-600">
+                                <li class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-video text-indigo-500 w-4 text-center"></i>
+                                    <span>{{ course.total_duration_minutes }} minutes on-demand video</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-file-code text-indigo-500 w-4 text-center"></i>
+                                    <span>{{ course.total_lessons }} in-depth lessons & code notes</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-circle-check text-indigo-500 w-4 text-center"></i>
+                                    <span>Interactive quizzes with instant scoring</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-infinity text-indigo-500 w-4 text-center"></i>
+                                    <span>Full lifetime access</span>
+                                </li>
+                                <li class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-certificate text-indigo-500 w-4 text-center"></i>
+                                    <span>Verified completion badge</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

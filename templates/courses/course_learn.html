@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ active_lesson.title }} - {{ course.title }} - EduLearn{% endblock %}
+
+{% block content %}
+<div class="bg-slate-900 text-white border-b border-slate-800 py-3 sticky top-16 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        
+        <!-- Left: Course Title & Back -->
+        <div class="flex items-center gap-3 truncate">
+            <a href="{% url 'course_detail' course.slug %}" class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">Overview</span>
+            </a>
+            <span class="text-slate-600 hidden sm:inline">&bull;</span>
+            <div class="truncate">
+                <h1 class="text-xs sm:text-sm font-bold text-white truncate">{{ course.title }}</h1>
+                <p class="text-[10px] text-slate-400 truncate">{{ active_lesson.module.title }} &bull; {{ active_lesson.title }}</p>
+            </div>
+        </div>
+
+        <!-- Right: Progress & Lesson Navigation -->
+        <div class="flex items-center gap-4 flex-shrink-0">
+            {% if enrollment %}
+                <div class="hidden md:flex items-center gap-2 text-xs text-slate-300">
+                    <span>Progress:</span>
+                    <div class="w-24 bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div class="bg-emerald-500 h-2 rounded-full transition-all" style="width: {{ enrollment.progress_percentage }}%"></div>
+                    </div>
+                    <span class="text-emerald-400 font-bold text-[11px]">{{ enrollment.progress_percentage }}%</span>
+                </div>
+            {% endif %}
+
+            <div class="flex items-center gap-2">
+                {% if prev_lesson %}
+                    <a href="{% url 'course_learn_lesson' course.slug prev_lesson.id %}" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition flex items-center gap-1">
+                        <i class="fa-solid fa-chevron-left text-[10px]"></i> <span class="hidden sm:inline">Prev</span>
+                    </a>
+                {% endif %}
+
+                {% if next_lesson %}
+                    <a href="{% url 'course_learn_lesson' course.slug next_lesson.id %}" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition flex items-center gap-1 shadow-sm">
+                        <span class="hidden sm:inline">Next</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left: Course Curriculum Sidebar (4 cols on lg) -->
+        <div class="lg:col-span-4 space-y-4 order-2 lg:order-1">
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden sticky top-36">
+                
+                <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 font-heading">Course Curriculum</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ completed_ids|length }} of {{ course.total_lessons }} lessons completed</p>
+                    </div>
+                </div>
+
+                <div class="max-h-[calc(100vh-220px)] overflow-y-auto divide-y divide-slate-100">
+                    {% for module in modules %}
+                        <div class="p-3 bg-slate-100/50">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-700 px-2 py-1">
+                                <span>Module {{ module.order }}: {{ module.title }}</span>
+                                <span class="text-[10px] text-slate-400 font-normal">{{ module.lessons.count }} lessons</span>
+                            </div>
+
+                            <div class="mt-2 space-y-1">
+                                {% for lesson in module.lessons.all %}
+                                    <a href="{% url 'course_learn_lesson' course.slug lesson.id %}" 
+                                       class="flex items-center justify-between p-2.5 rounded-xl text-xs transition 
+                                       {% if lesson.id == active_lesson.id %} bg-indigo-600 text-white font-bold shadow-sm 
+                                       {% else %} text-slate-700 hover:bg-white {% endif %}">
+                                        
+                                        <div class="flex items-center gap-2.5 truncate">
+                                            {% if lesson.id in completed_ids %}
+                                                <i class="fa-solid fa-circle-check text-emerald-500 text-sm flex-shrink-0 {% if lesson.id == active_lesson.id %}text-emerald-300{% endif %}"></i>
+                                            {% else %}
+                                                <i class="fa-regular fa-circle text-slate-300 text-sm flex-shrink-0 {% if lesson.id == active_lesson.id %}text-indigo-200{% endif %}"></i>
+                                            {% endif %}
+
+                                            <span class="truncate">{{ lesson.title }}</span>
+                                        </div>
+
+                                        <div class="flex items-center gap-2 flex-shrink-0 text-[10px] {% if lesson.id == active_lesson.id %}text-indigo-200{% else %}text-slate-400{% endif %}">
+                                            <span>{{ lesson.duration_minutes }}m</span>
+                                            {% if lesson.lesson_type == 'video' %}
+                                                <i class="fa-solid fa-video"></i>
+                                            {% else %}
+                                                <i class="fa-solid fa-file-lines"></i>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <!-- Quizzes Section in Sidebar -->
+                    {% if course_quizzes or lesson_quizzes %}
+                        <div class="p-4 bg-purple-50/50">
+                            <h4 class="text-xs font-bold text-purple-900 uppercase tracking-wider mb-2">Available Quizzes</h4>
+                            <div class="space-y-1.5">
+                                {% for q in lesson_quizzes %}
+                                    <a href="{% url 'quiz_detail' q.id %}" class="flex items-center justify-between p-2 rounded-xl bg-white border border-purple-100 text-xs text-purple-700 font-semibold hover:bg-purple-100/60 transition">
+                                        <span class="truncate"><i class="fa-solid fa-clipboard-question mr-1.5"></i> {{ q.title }}</span>
+                                        <span class="text-[10px] text-purple-500">Take &rarr;</span>
+                                    </a>
+                                {% endfor %}
+                                {% for q in course_quizzes %}
+                                    <a href="{% url 'quiz_detail' q.id %}" class="flex items-center justify-between p-2 rounded-xl bg-white border border-purple-100 text-xs text-purple-700 font-semibold hover:bg-purple-100/60 transition">
+                                        <span class="truncate"><i class="fa-solid fa-award mr-1.5"></i> {{ q.title }}</span>
+                                        <span class="text-[10px] text-purple-500">Exam &rarr;</span>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right: Active Lesson Player & Content (8 cols on lg) -->
+        <div class="lg:col-span-8 space-y-6 order-1 lg:order-2">
+            
+            <!-- Video / Media Player Container -->
+            <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800">
+                {% if active_lesson.video_url %}
+                    <div class="relative w-full pb-[56.25%] bg-black">
+                        <iframe src="{{ active_lesson.get_embed_url }}" 
+                                class="absolute top-0 left-0 w-full h-full border-0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen></iframe>
+                    </div>
+                {% else %}
+                    <!-- Text Lesson Cover -->
+                    <div class="p-12 text-center bg-gradient-to-br from-indigo-900 to-slate-900 text-white space-y-3">
+                        <div class="w-16 h-16 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto text-2xl">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <h2 class="text-xl font-bold font-heading">{{ active_lesson.title }}</h2>
+                        <p class="text-xs text-slate-400">Reading & Hands-on Coding Material below</p>
+                    </div>
+                {% endif %}
+
+                <!-- Player Action Toolbar -->
+                <div class="p-5 bg-slate-950 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-800">
+                    <div>
+                        <h2 class="text-base font-bold text-white">{{ active_lesson.title }}</h2>
+                        <div class="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
+                            <span><i class="fa-regular fa-clock mr-1"></i> {{ active_lesson.duration_minutes }} minutes</span>
+                            <span>&bull;</span>
+                            <span class="capitalize">{{ active_lesson.get_lesson_type_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                        <form method="POST" action="{% url 'toggle_lesson_progress' active_lesson.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2
+                                {% if is_current_completed %}
+                                    bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-900
+                                {% else %}
+                                    bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700
+                                {% endif %}">
+                                {% if is_current_completed %}
+                                    <i class="fa-solid fa-circle-check text-emerald-200"></i> Completed
+                                {% else %}
+                                    <i class="fa-regular fa-circle"></i> Mark as Complete
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        {% if next_lesson %}
+                            <a href="{% url 'course_learn_lesson' course.slug next_lesson.id %}" class="px-5 py-2.5 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-900 hover:opacity-95 transition flex items-center gap-2">
+                                Next Lesson <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs: Notes, Quizzes, Discussions -->
+            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                
+                <div class="flex border-b border-slate-200 bg-slate-50/50 px-6 pt-3 gap-6 text-xs font-bold">
+                    <button onclick="switchTab('notes')" id="tab-btn-notes" class="pb-3 border-b-2 border-indigo-600 text-indigo-600 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-lines"></i> Lesson Notes
+                    </button>
+                    <button onclick="switchTab('quizzes')" id="tab-btn-quizzes" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-circle-question"></i> Quizzes
+                        {% if lesson_quizzes.count %}<span class="px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px]">{{ lesson_quizzes.count }}</span>{% endif %}
+                    </button>
+                    <button onclick="switchTab('discussions')" id="tab-btn-discussions" class="pb-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-comments"></i> Discussion ({{ discussions.count }})
+                    </button>
+                </div>
+
+                <!-- Tab 1: Lesson Notes -->
+                <div id="tab-content-notes" class="p-6 sm:p-8 space-y-4">
+                    {% if active_lesson.content %}
+                        <div class="text-sm text-slate-700 leading-relaxed space-y-4 prose max-w-none">
+                            {{ active_lesson.content|linebreaks }}
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-slate-400">Watch the video lecture above. You can post any questions in the Discussion tab!</p>
+                    {% endif %}
+                </div>
+
+                <!-- Tab 2: Quizzes -->
+                <div id="tab-content-quizzes" class="p-6 sm:p-8 space-y-4 hidden">
+                    {% if lesson_quizzes or course_quizzes %}
+                        <div class="space-y-4">
+                            {% for q in lesson_quizzes %}
+                                <div class="p-5 rounded-2xl bg-purple-50/60 border border-purple-100 flex items-center justify-between gap-4">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 text-[10px] font-bold">Lesson Quiz</span>
+                                            <h4 class="text-sm font-bold text-slate-900">{{ q.title }}</h4>
+                                        </div>
+                                        <p class="text-xs text-slate-600">{{ q.description|default:"Test your understanding with instant grading." }}</p>
+                                        <div class="text-[11px] text-slate-500 font-medium">
+                                            <span>Passing Score: {{ q.passing_score }}%</span> &bull; 
+                                            <span>Time: {{ q.time_limit_minutes }} mins</span> &bull; 
+                                            <span>{{ q.questions.count }} Questions</span>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'quiz_detail' q.id %}" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-200 transition whitespace-nowrap">
+                                        Take Quiz &rarr;
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-slate-400 text-center py-6">No quizzes assigned to this lesson yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Tab 3: Discussions -->
+                <div id="tab-content-discussions" class="p-6 sm:p-8 space-y-6 hidden">
+                    
+                    <!-- Post Discussion Form -->
+                    <form method="POST" action="{% url 'add_discussion' active_lesson.id %}" class="space-y-3">
+                        {% csrf_token %}
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Ask a Question or Leave a Comment</label>
+                        {{ discussion_form.content }}
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-5 py-2 rounded-xl gradient-brand text-white text-xs font-bold shadow-md shadow-indigo-200">
+                                Post Question
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Discussion Threads -->
+                    <div class="space-y-4 pt-4 border-t border-slate-100">
+                        {% for d in discussions %}
+                            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <img src="{{ d.user.get_avatar }}" alt="{{ d.user.username }}" class="w-7 h-7 rounded-full object-cover">
+                                        <div>
+                                            <span class="text-xs font-bold text-slate-900">{{ d.user.get_full_name|default:d.user.username }}</span>
+                                            {% if d.user.is_instructor %}<span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-700 text-[10px] font-bold ml-1">Instructor</span>{% endif %}
+                                            <span class="text-[10px] text-slate-400 ml-2">{{ d.created_at|timesince }} ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-700 leading-relaxed">{{ d.content }}</p>
+
+                                <!-- Replies -->
+                                {% if d.replies.all %}
+                                    <div class="ml-6 pt-2 space-y-2 border-l-2 border-slate-200 pl-3">
+                                        {% for reply in d.replies.all %}
+                                            <div class="text-xs space-y-1">
+                                                <div class="flex items-center gap-2">
+                                                    <img src="{{ reply.user.get_avatar }}" alt="{{ reply.user.username }}" class="w-5 h-5 rounded-full object-cover">
+                                                    <span class="font-bold text-slate-800">{{ reply.user.get_full_name|default:reply.user.username }}</span>
+                                                    {% if reply.user.is_instructor %}<span class="px-1 py-0.2 rounded bg-purple-100 text-purple-700 text-[9px] font-bold">Instructor</span>{% endif %}
+                                                    <span class="text-[10px] text-slate-400">{{ reply.created_at|timesince }} ago</span>
+                                                </div>
+                                                <p class="text-slate-600 pl-7">{{ reply.content }}</p>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Reply Form Toggle -->
+                                <div class="pt-2">
+                                    <form method="POST" action="{% url 'add_discussion' active_lesson.id %}" class="flex gap-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="parent_id" value="{{ d.id }}">
+                                        <input type="text" name="content" placeholder="Reply to this question..." class="flex-1 px-3 py-1.5 text-xs rounded-lg border border-slate-200 outline-none focus:border-indigo-500">
+                                        <button type="submit" class="px-3 py-1.5 bg-slate-200 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-semibold transition">Reply</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-xs text-slate-400 text-center py-4">No questions asked yet. Be the first to start the discussion!</p>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function switchTab(tab) {
+        const tabs = ['notes', 'quizzes', 'discussions'];
+        tabs.forEach(t => {
+            const content = document.getElementById(`tab-content-${t}`);
+            const btn = document.getElementById(`tab-btn-${t}`);
+            if (t === tab) {
+                content.classList.remove('hidden');
+                btn.classList.add('border-indigo-600', 'text-indigo-600');
+                btn.classList.remove('border-transparent', 'text-slate-500');
+            } else {
+                content.classList.add('hidden');
+                btn.classList.remove('border-indigo-600', 'text-indigo-600');
+                btn.classList.add('border-transparent', 'text-slate-500');
+            }
+        });
+    }
+</script>
+{% endblock %}
